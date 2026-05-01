@@ -1,0 +1,123 @@
+version: '3.8'
+
+services:
+
+  # ─────────────────────────────────────────
+  # API Gateway — єдина точка входу (порт 3000)
+  # ─────────────────────────────────────────
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./api-gateway/.env
+    depends_on:
+      - auth-service
+      - transaction-service
+      - asset-service
+    networks:
+      - app-network
+    restart: on-failure
+
+  # ─────────────────────────────────────────
+  # Auth Service
+  # ─────────────────────────────────────────
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./auth-service/.env
+    depends_on:
+      - mongo-auth
+    networks:
+      - app-network
+    restart: on-failure
+
+  # ─────────────────────────────────────────
+  # Transaction Service
+  # ─────────────────────────────────────────
+  transaction-service:
+    build: ./transaction-service
+    container_name: transaction-service
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./transaction-service/.env
+    depends_on:
+      - mongo-transactions
+    networks:
+      - app-network
+    restart: on-failure
+
+  # ─────────────────────────────────────────
+  # Asset Service
+  # ─────────────────────────────────────────
+  asset-service:
+    build: ./asset-service
+    container_name: asset-service
+    ports:
+      - "3003:3003"
+    env_file:
+      - ./asset-service/.env
+    depends_on:
+      - mongo-assets
+    networks:
+      - app-network
+    restart: on-failure
+
+  # ─────────────────────────────────────────
+  # MongoDB для Auth Service
+  # ─────────────────────────────────────────
+  mongo-auth:
+    image: mongo:6
+    container_name: mongo-auth
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-auth-data:/data/db
+    networks:
+      - app-network
+
+  # ─────────────────────────────────────────
+  # MongoDB для Transaction Service
+  # ─────────────────────────────────────────
+  mongo-transactions:
+    image: mongo:6
+    container_name: mongo-transactions
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-transactions-data:/data/db
+    networks:
+      - app-network
+
+  # ─────────────────────────────────────────
+  # MongoDB для Asset Service
+  # ─────────────────────────────────────────
+  mongo-assets:
+    image: mongo:6
+    container_name: mongo-assets
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo-assets-data:/data/db
+    networks:
+      - app-network
+
+# ─────────────────────────────────────────
+# Volumes — збереження даних між перезапусками
+# ─────────────────────────────────────────
+volumes:
+  mongo-auth-data:
+  mongo-transactions-data:
+  mongo-assets-data:
+
+# ─────────────────────────────────────────
+# Мережа — всі сервіси в одній внутрішній мережі
+# ─────────────────────────────────────────
+networks:
+  app-network:
+    driver: bridge
