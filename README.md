@@ -31,17 +31,17 @@
 
 ```mermaid
 graph TD
-    Client["👤 Клієнт\nPostman / Web / Mobile"]
+    Client["👤 Клієнт<br/>Postman / Web / Mobile"]
 
-    Client -->|"HTTP запити"| GW["🌐 API Gateway\nlocalhost:3000"]
+    Client -->|"HTTP запити"| GW["🌐 API Gateway<br/>localhost:3000"]
 
-    GW -->|"/api/auth/*"| AS["🔐 Auth Service\n:3001"]
-    GW -->|"/api/transactions/*"| TS["💸 Transaction Service\n:3002"]
-    GW -->|"/api/assets/*"| ATS["🏠 Asset Service\n:3003"]
+    GW -->|"/api/auth/*"| AS["🔐 Auth Service<br/>:3001"]
+    GW -->|"/api/transactions/*"| TS["💸 Transaction Service<br/>:3002"]
+    GW -->|"/api/assets/*"| ATS["🏠 Asset Service<br/>:3003"]
 
-    AS --> MA["🗄️ mongo-auth\nauth_db :27017"]
-    TS --> MT["🗄️ mongo-transactions\ntransactions_db :27018"]
-    ATS --> MAT["🗄️ mongo-assets\nassets_db :27019"]
+    AS --> MA["🗄️ mongo-auth<br/>auth_db :27017"]
+    TS --> MT["🗄️ mongo-transactions<br/>transactions_db :27018"]
+    ATS --> MAT["🗄️ mongo-assets<br/>assets_db :27019"]
 
     style Client fill:#4A90D9,color:#fff
     style GW fill:#F5A623,color:#fff
@@ -80,8 +80,7 @@ sequenceDiagram
 
     rect rgb(40, 60, 40)
         Note over C,DB1: Крок 1 — Логін та отримання токена
-        C->>G: POST /api/auth/auth/login
-{ email, password }
+        C->>G: POST /api/auth/auth/login, body: { email, password }
         G->>A: POST /auth/login
         A->>DB1: findOne({ email })
         DB1-->>A: User document
@@ -93,12 +92,9 @@ sequenceDiagram
 
     rect rgb(40, 40, 60)
         Note over C,DB2: Крок 2 — Захищений запит з токеном
-        C->>G: GET /api/transactions/transactions
-Authorization: Bearer eyJ...
-        G->>T: GET /transactions
-Authorization: Bearer eyJ...
-        T->>T: jwt.verify(token, SECRET)
-в authMiddleware
+        C->>G: GET /api/transactions/transactions, Authorization: Bearer eyJ...
+        G->>T: GET /transactions, Authorization: Bearer eyJ...
+        T->>T: jwt.verify(token, SECRET) в authMiddleware
         T->>DB2: find({ userId })
         DB2-->>T: Transactions
         T-->>G: { transactions: [...] }
@@ -136,7 +132,7 @@ graph LR
         AS6["DELETE /:id — видалити"]
     end
 
-    GW["🌐 API Gateway\n:3000"] --> A1 & A2 & A3
+    GW["🌐 API Gateway<br/>:3000"] --> A1 & A2 & A3
     GW --> T1 & T2 & T3 & T4 & T5 & T6
     GW --> AS1 & AS2 & AS3 & AS4 & AS5 & AS6
 ```
@@ -353,21 +349,14 @@ docker compose down -v
 
 ```mermaid
 graph LR
-    P["🔑 Пароль
-відкритий текст"]
-    P -->|"bcrypt
-salt=10"| H["#️⃣ Хеш
-у MongoDB"]
+    P["🔑 Пароль<br/>відкритий текст"]
+    P -->|"bcrypt<br/>salt=10"| H["#️⃣ Хеш<br/>у MongoDB"]
 
     T["👤 Логін успішний"]
-    T -->|"jwt.sign
-expires: 7d"| JWT["🎫 JWT Токен"]
-    JWT -->|"Authorization:
-Bearer ..."| API["🌐 API Gateway"]
+    T -->|"jwt.sign<br/>expires: 7d"| JWT["🎫 JWT Токен"]
+    JWT -->|"Authorization:<br/>Bearer ..."| API["🌐 API Gateway"]
     API -->|"Проксування запиту"| S["🧩 Захищений сервіс"]
-    S -->|"jwt.verify
-SECRET"| OK["✅ Доступ
-надано"]
+    S -->|"jwt.verify<br/>SECRET"| OK["✅ Доступ<br/>надано"]
 ```
 
 - Паролі зберігаються у вигляді **bcrypt хешу** (сіль 10 раундів)
